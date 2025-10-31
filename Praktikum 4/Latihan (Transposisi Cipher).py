@@ -128,3 +128,4 @@ text_detail.tag_config("isi", font=("Consolas", 10))
 text_detail.tag_config("hasil", font=("Consolas", 10, "bold"), foreground="blue")
 
 root.mainloop()
+p
