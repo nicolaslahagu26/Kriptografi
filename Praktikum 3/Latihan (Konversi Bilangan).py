@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-# ----- warna tema -----
 BG, PRIMARY, ACCENT, WHITE, TEXT = "#e7f0ff", "#264653", "#2a9d8f", "#ffffff", "#1a1a1a"
 
 def konversi():
