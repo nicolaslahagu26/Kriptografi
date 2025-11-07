@@ -1,0 +1,175 @@
+import string
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+class VigenereCipher:
+    def __init__(self, key):
+        self.__key = key.upper()
+        self.alphabet = string.ascii_uppercase
+
+    def __format_key(self, text):
+        key = self.__key
+        key_extended = ""
+        i = 0
+        for char in text:
+            if char.upper() in self.alphabet:
+                key_extended += key[i % len(key)]
+                i += 1
+            else:
+                key_extended += char
+        return key_extended
+
+    def __shift_char(self, char, key_char, mode):
+        if char.upper() not in self.alphabet:
+            return char
+        
+        text_index = self.alphabet.index(char.upper())
+        key_index = self.alphabet.index(key_char)
+        
+        if mode == "encrypt":
+            shifted = (text_index + key_index) % 26
+        else:
+            shifted = (text_index - key_index) % 26
+        
+        result_char = self.alphabet[shifted]
+        return result_char if char.isupper() else result_char.lower()
+
+    def process_text(self, text, mode):
+        key_extended = self.__format_key(text)
+        result = ""
+        process_details = []
+        for i, char in enumerate(text):
+            key_char = key_extended[i]
+            if char.upper() in self.alphabet:
+                shifted_char = self.__shift_char(char, key_char, mode)
+                result += shifted_char
+                process_details.append(
+                    f"Teks: {char} | Kunci: {key_char} | Pergeseran: {self.alphabet.index(key_char):02d} → {shifted_char}"
+                )
+            else:
+                result += char
+                process_details.append(f"Lewati karakter non-huruf: '{char}'")
+        return result, process_details
+
+    def encrypt(self, plaintext):
+        return self.process_text(plaintext, "encrypt")
+
+    def decrypt(self, ciphertext):
+        return self.process_text(ciphertext, "decrypt")
+
+
+class VigenereApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Vigenère Cipher - PBO Version")
+        self.root.geometry("800x650")
+        self.root.configure(bg="#E9EEF5")
+
+        self.set_style()
+        self.create_layout()
+
+    def set_style(self):
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        self.style.configure("TButton",
+                             font=("Segoe UI", 10, "bold"),
+                             padding=8,
+                             background="#3F51B5",
+                             foreground="white",
+                             relief="flat")
+        self.style.map("TButton",
+                       background=[("active", "#5C6BC0"), ("pressed", "#283593")])
+
+    def create_layout(self):
+        header = tk.Frame(self.root, bg="#3F51B5", height=80)
+        header.pack(fill="x")
+
+        tk.Label(header,
+                 text="VIGENÈRE CIPHER - ENKRIPSI & DESKRIPSI",
+                 bg="#3F51B5",
+                 fg="white",
+                 font=("Segoe UI", 16, "bold")).pack(expand=True, pady=20)
+
+        main_frame = tk.Frame(self.root, bg="#E9EEF5")
+        main_frame.pack(pady=15, expand=True)
+
+        input_frame = tk.LabelFrame(main_frame, text="Input Data",
+                                    bg="#FFFFFF", font=("Segoe UI", 11, "bold"),
+                                    fg="#2C3E50", padx=15, pady=15)
+        input_frame.grid(row=0, column=0, padx=20, pady=10)
+
+        tk.Label(input_frame, text="Kunci:", bg="#FFFFFF", font=("Segoe UI", 10)).grid(row=0, column=0, sticky="w", padx=5, pady=5)
+        self.key_entry = ttk.Entry(input_frame, width=40)
+        self.key_entry.grid(row=0, column=1, padx=10)
+
+        tk.Label(input_frame, text="Teks:", bg="#FFFFFF", font=("Segoe UI", 10)).grid(row=1, column=0, sticky="nw", padx=5, pady=5)
+        self.text_entry = tk.Text(input_frame, height=5, width=50,
+                                  font=("Consolas", 10), wrap="word", relief="solid", bd=1)
+        self.text_entry.grid(row=1, column=1, padx=10, pady=5)
+
+        btn_frame = tk.Frame(main_frame, bg="#E9EEF5")
+        btn_frame.grid(row=1, column=0, pady=10)
+
+        ttk.Button(btn_frame, text="Enkripsi", command=self.encrypt_text, width=15).grid(row=0, column=0, padx=10)
+        ttk.Button(btn_frame, text="Deskripsi", command=self.decrypt_text, width=15).grid(row=0, column=1, padx=10)
+        ttk.Button(btn_frame, text="Bersihkan", command=self.clear_all, width=15).grid(row=0, column=2, padx=10)
+
+        result_frame = tk.LabelFrame(main_frame, text="Hasil",
+                                     bg="#FFFFFF", font=("Segoe UI", 11, "bold"),
+                                     fg="#2C3E50", padx=15, pady=10)
+        result_frame.grid(row=2, column=0, pady=10)
+
+        self.result_box = tk.Text(result_frame, height=3, width=80,
+                                  font=("Consolas", 10), bg="#F7F9FC",
+                                  relief="solid", bd=1)
+        self.result_box.pack(padx=10, pady=5)
+
+        process_frame = tk.LabelFrame(main_frame, text="Detail Proses",
+                                      bg="#FFFFFF", font=("Segoe UI", 11, "bold"),
+                                      fg="#2C3E50", padx=15, pady=10)
+        process_frame.grid(row=3, column=0, pady=10)
+
+        self.process_box = tk.Text(process_frame, height=13, width=80,
+                                   font=("Consolas", 9), bg="#FAFAFA",
+                                   relief="solid", bd=1)
+        self.process_box.pack(padx=10, pady=5)
+
+    def encrypt_text(self):
+        self.process("encrypt")
+
+    def decrypt_text(self):
+        self.process("decrypt")
+
+    def process(self, mode):
+        key = self.key_entry.get().strip()
+        text = self.text_entry.get("1.0", tk.END).strip()
+
+        if not key or not text:
+            messagebox.showwarning("Peringatan", "Masukkan kunci dan teks terlebih dahulu!")
+            return
+
+        cipher = VigenereCipher(key)
+        result, details = cipher.encrypt(text) if mode == "encrypt" else cipher.decrypt(text)
+
+        self.result_box.delete("1.0", tk.END)
+        self.result_box.insert(tk.END, result)
+
+        self.process_box.delete("1.0", tk.END)
+        mode_str = "ENKRIPSI" if mode == "encrypt" else "DESKRIPSI"
+        self.process_box.insert(tk.END, f"===== PROSES {mode_str} =====\n\n")
+        for line in details:
+            self.process_box.insert(tk.END, f"{line}\n")
+        self.process_box.insert(tk.END, "\n" + "=" * 50 + "\n")
+
+    def clear_all(self):
+        self.key_entry.delete(0, tk.END)
+        self.text_entry.delete("1.0", tk.END)
+        self.result_box.delete("1.0", tk.END)
+        self.process_box.delete("1.0", tk.END)
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = VigenereApp(root)
+    root.mainloop()
