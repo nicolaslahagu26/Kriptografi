@@ -1,0 +1,121 @@
+import customtkinter as ctk
+import random
+import math
+
+
+def is_prime(n):
+    if n < 2: return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+def random_prime(a, b):
+    while True:
+        x = random.randint(a, b)
+        if is_prime(x):
+            return x
+
+def mod_inverse(a, m):
+    for x in range(1, m):
+        if (a * x) % m == 1:
+            return x
+    return None
+
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+app = ctk.CTk()
+app.title("RSA Latihan 2")
+app.geometry("620x620")
+
+
+title = ctk.CTkLabel(
+    app, text="RSA LATIHAN 2",
+    font=ctk.CTkFont(size=22, weight="bold")
+)
+title.pack(pady=15)
+
+frame = ctk.CTkFrame(app)
+frame.pack(fill="both", expand=True, padx=15, pady=10)
+
+label_pt = ctk.CTkLabel(frame, text="Masukkan Plaintext:",
+                        font=ctk.CTkFont(size=14))
+label_pt.pack(pady=10)
+
+entry_pt = ctk.CTkEntry(frame, width=350, height=40,
+                        font=ctk.CTkFont(size=14))
+entry_pt.pack()
+
+result_frame = ctk.CTkFrame(frame)
+result_frame.pack(pady=20, fill="both", padx=10)
+
+label_keys = ctk.CTkLabel(result_frame, text="Kunci RSA akan tampil di sini",
+                          font=ctk.CTkFont(size=13), justify="left")
+label_keys.pack(pady=10)
+
+label_cipher = ctk.CTkLabel(result_frame, text="Ciphertext: -",
+                            font=ctk.CTkFont(size=13), justify="left")
+label_cipher.pack(pady=10)
+
+label_decrypt = ctk.CTkLabel(result_frame, text="Dekripsi: -",
+                             font=ctk.CTkFont(size=13), justify="left")
+label_decrypt.pack(pady=10)
+
+def process_rsa():
+    plaintext = entry_pt.get()
+    if plaintext.strip() == "":
+        label_cipher.configure(text="Ciphertext: (input kosong)")
+        label_decrypt.configure(text="Dekripsi: (input kosong)")
+        return
+
+    p = random_prime(50, 200)
+    q = random_prime(50, 200)
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    while True:
+        e = random.randint(2, phi - 1)
+        if math.gcd(e, phi) == 1:
+            break
+
+    d = mod_inverse(e, phi)
+
+    label_keys.configure(
+        text=f"""Kunci RSA:
+p = {p}
+q = {q}
+n = {n}
+phi = {phi}
+e = {e}
+d = {d}
+Public Key  = ({e}, {n})
+Private Key = ({d}, {n})
+"""
+    )
+
+    cipher_list = []
+    for ch in plaintext:
+        m = ord(ch)
+        c = pow(m, e, n)
+        cipher_list.append(c)
+
+    label_cipher.configure(text=f"Ciphertext: {cipher_list}")
+
+    decrypted = ""
+    for c in cipher_list:
+        m = pow(c, d, n)
+        decrypted += chr(m)
+
+    label_decrypt.configure(text=f"Dekripsi: {decrypted}")
+
+
+btn_process = ctk.CTkButton(
+    app, text="Proses RSA", height=45, width=220,
+    font=ctk.CTkFont(size=16, weight="bold"),
+    command=process_rsa
+)
+btn_process.pack(pady=10)
+
+
+app.mainloop()
