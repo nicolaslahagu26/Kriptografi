@@ -4,9 +4,6 @@ import random
 import math
 
 
-# =========================
-#  RSA FUNCTIONS
-# =========================
 
 def is_prime(n):
     if n < 2: return False
@@ -28,9 +25,6 @@ def mod_inverse(a, m):
     return None
 
 
-# =========================
-#  GENERATE RSA
-# =========================
 def generate_rsa():
     global p, q, n, phi, e, d
 
@@ -54,9 +48,6 @@ def generate_rsa():
     messagebox.showinfo("Sukses", "Kunci RSA berhasil dibuat!")
 
 
-# =========================
-#  ENCRYPT
-# =========================
 def encrypt_text():
     if entry_plain.get() == "":
         messagebox.showwarning("Peringatan", "Masukkan plaintext terlebih dahulu!")
@@ -72,14 +63,10 @@ def encrypt_text():
 
     output_cipher.configure(text=str(cipher))
 
-    # Simpan untuk proses dekripsi
     global last_cipher
     last_cipher = cipher
 
 
-# =========================
-#  DECRYPT
-# =========================
 def decrypt_text():
     if not last_cipher:
         messagebox.showwarning("Peringatan", "Lakukan enkripsi terlebih dahulu!")
@@ -93,10 +80,6 @@ def decrypt_text():
     output_decrypted.configure(text=decrypted)
 
 
-
-# =========================
-#  GUI Modern
-# =========================
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -105,18 +88,15 @@ app.title("RSA LATIHAN 2 - Modern GUI")
 app.geometry("600x520")
 
 
-# ========================= TITLE
 title = ctk.CTkLabel(app, text="RSA LATIHAN 2 (Modern UI)",
                      font=ctk.CTkFont(size=24, weight="bold"))
 title.pack(pady=15)
 
 
-# ========================= FRAME UTAMA
 frame = ctk.CTkFrame(app)
 frame.pack(pady=10, padx=15, fill="both", expand=True)
 
 
-# ========================= KUNCI RSA
 btn_gen = ctk.CTkButton(frame, text="Generate RSA (p, q, e acak)",
                         height=40, font=ctk.CTkFont(size=15, weight="bold"),
                         command=generate_rsa)
@@ -127,7 +107,6 @@ label_info = ctk.CTkLabel(frame, text="p=?   q=?\nn=?\nphi=?\ne=?   d=?",
 label_info.pack(pady=10)
 
 
-# ========================= INPUT PLAINTEXT
 label_plain = ctk.CTkLabel(frame, text="Masukkan plaintext:",
                            font=ctk.CTkFont(size=15))
 label_plain.pack(pady=5)
@@ -137,7 +116,6 @@ entry_plain = ctk.CTkEntry(frame, height=40, width=350,
 entry_plain.pack(pady=5)
 
 
-# ========================= TOMBOL ENKRIPSI / DEKRIPSI
 btn_encrypt = ctk.CTkButton(frame, text="Enkripsi",
                             height=40, width=200,
                             font=ctk.CTkFont(size=15, weight="bold"),
@@ -151,7 +129,6 @@ btn_decrypt = ctk.CTkButton(frame, text="Dekripsi",
 btn_decrypt.pack(pady=5)
 
 
-# ========================= OUTPUT CIPHER
 label_cipher = ctk.CTkLabel(frame, text="Ciphertext:",
                             font=ctk.CTkFont(size=15))
 label_cipher.pack(pady=5)
@@ -161,7 +138,6 @@ output_cipher = ctk.CTkLabel(frame, text="-",
 output_cipher.pack(pady=5)
 
 
-# ========================= OUTPUT DECRYPTED
 label_decrypted = ctk.CTkLabel(frame, text="Hasil Dekripsi:",
                                font=ctk.CTkFont(size=15))
 label_decrypted.pack(pady=5)
