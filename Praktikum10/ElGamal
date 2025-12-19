@@ -1,0 +1,138 @@
+import customtkinter as ctk
+from tkinter import messagebox
+
+# ---------------------------
+# Konfigurasi Awal GUI
+# ---------------------------
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+# ---------------------------
+# Fungsi Perpangkatan Modular
+# ---------------------------
+def mod_exp(base, exp, mod):
+    hasil = 1
+    langkah = []
+
+    while exp > 0:
+        if exp % 2 == 1:
+            hasil = (hasil * base) % mod
+            langkah.append(f"hasil = (hasil × {base}) mod {mod} = {hasil}")
+        base = (base * base) % mod
+        langkah.append(f"base = base² mod {mod} = {base}")
+        exp //= 2
+
+    return hasil, langkah
+
+
+# ---------------------------
+# Fungsi Proses ElGamal
+# ---------------------------
+def proses_elgamal():
+    try:
+        p = int(entry_p.get())
+        g = int(entry_g.get())
+        x = int(entry_x.get())
+        k = int(entry_k.get())
+        m = int(entry_m.get())
+
+        output.delete("1.0", "end")
+
+        # ---------------------------
+        # Pembangkitan Kunci Publik
+        # ---------------------------
+        output.insert("end", "=== PEMBANGKITAN KUNCI PUBLIK ===\n")
+        y, langkah_y = mod_exp(g, x, p)
+        output.insert("end", f"y = g^x mod p = {g}^{x} mod {p}\n")
+        for l in langkah_y:
+            output.insert("end", f"  {l}\n")
+        output.insert("end", f"Kunci Publik y = {y}\n\n")
+
+        # ---------------------------
+        # Enkripsi
+        # ---------------------------
+        output.insert("end", "=== PROSES ENKRIPSI ===\n")
+        a, langkah_a = mod_exp(g, k, p)
+        output.insert("end", f"\na = g^k mod p = {g}^{k} mod {p}\n")
+        for l in langkah_a:
+            output.insert("end", f"  {l}\n")
+        output.insert("end", f"Nilai a = {a}\n")
+
+        yk, langkah_yk = mod_exp(y, k, p)
+        output.insert("end", f"\ny^k mod p = {y}^{k} mod {p}\n")
+        for l in langkah_yk:
+            output.insert("end", f"  {l}\n")
+
+        b = (m * yk) % p
+        output.insert("end", f"\nb = m × y^k mod p\n")
+        output.insert("end", f"b = {m} × {yk} mod {p} = {b}\n")
+        output.insert("end", f"\nCiphertext (a, b) = ({a}, {b})\n\n")
+
+        # ---------------------------
+        # Dekripsi
+        # ---------------------------
+        output.insert("end", "=== PROSES DEKRIPSI ===\n")
+        s, langkah_s = mod_exp(a, x, p)
+        output.insert("end", f"\ns = a^x mod p = {a}^{x} mod {p}\n")
+        for l in langkah_s:
+            output.insert("end", f"  {l}\n")
+
+        s_inv = pow(s, -1, p)
+        output.insert("end", f"\ns⁻¹ = invers dari {s} mod {p} = {s_inv}\n")
+
+        m_dekripsi = (b * s_inv) % p
+        output.insert("end", f"\nPesan hasil dekripsi:\n")
+        output.insert("end", f"m = {b} × {s_inv} mod {p} = {m_dekripsi}\n\n")
+
+        output.insert("end", "=== HASIL AKHIR ===\n")
+        output.insert("end", f"Pesan Asli     : {m}\n")
+        output.insert("end", f"Pesan Dekripsi : {m_dekripsi}\n")
+
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+
+# ---------------------------
+# Window Utama
+# ---------------------------
+app = ctk.CTk()
+app.title("ElGamal Encryption & Decryption")
+app.geometry("900x650")
+
+# ---------------------------
+# Frame Input
+# ---------------------------
+frame_input = ctk.CTkFrame(app)
+frame_input.pack(padx=20, pady=15, fill="x")
+
+ctk.CTkLabel(frame_input, text="INPUT PARAMETER ELGAMAL", font=("Segoe UI", 18, "bold")).pack(pady=10)
+
+entry_p = ctk.CTkEntry(frame_input, placeholder_text="p (bilangan prima)")
+entry_g = ctk.CTkEntry(frame_input, placeholder_text="g (generator)")
+entry_x = ctk.CTkEntry(frame_input, placeholder_text="x (kunci privat)")
+entry_k = ctk.CTkEntry(frame_input, placeholder_text="k (bilangan acak)")
+entry_m = ctk.CTkEntry(frame_input, placeholder_text="m (pesan < p)")
+
+for e in (entry_p, entry_g, entry_x, entry_k, entry_m):
+    e.pack(pady=5, fill="x", padx=30)
+
+ctk.CTkButton(
+    frame_input,
+    text="PROSES ELGAMAL",
+    command=proses_elgamal,
+    height=40,
+    font=("Segoe UI", 14, "bold")
+).pack(pady=15)
+
+# ---------------------------
+# Frame Output
+# ---------------------------
+frame_output = ctk.CTkFrame(app)
+frame_output.pack(padx=20, pady=10, fill="both", expand=True)
+
+ctk.CTkLabel(frame_output, text="OUTPUT PROSES & LANGKAH", font=("Segoe UI", 16, "bold")).pack(pady=5)
+
+output = ctk.CTkTextbox(frame_output, wrap="word", font=("Consolas", 12))
+output.pack(padx=15, pady=10, fill="both", expand=True)
+
+app.mainloop()
